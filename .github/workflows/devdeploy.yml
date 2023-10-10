@@ -42,9 +42,9 @@ jobs:
 
           - name: Build Artifact
             run: |
-          version=${{ steps.set_version.outputs.new_version }}
-          echo "Building artifact version $version"
-          # Add commands to build the artifact with the new version
+             version=${{ steps.set_version.outputs.new_version }}
+             echo "Building artifact version $version"
+             # Add commands to build the artifact with the new version
 
           -name: Setup .Net core
           uses:actions/setup-dotnet@v1
