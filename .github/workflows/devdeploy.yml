@@ -40,17 +40,17 @@ jobs:
          $new_version = "$major.$minor.$($sprint_number + 1)"
          echo "::set-output name=new_version::$new_version"
 
-          - name: Build Artifact
-            run: |
+      - name: Build Artifact
+        run: |
              version=${{ steps.set_version.outputs.new_version }}
              echo "Building artifact version $version"
              # Add commands to build the artifact with the new version
 
-          -name: Setup .Net core
+        -name: Setup .Net core
           uses:actions/setup-dotnet@v1
 
-          -name: Build with .Net
-           run: dotnet build
+       -name: Build with .Net
+        run: dotnet build
   
   
   
