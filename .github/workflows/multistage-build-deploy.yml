@@ -1,1 +1,98 @@
+name: Multi-Environment Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        options:
+          - 'uat'
+          - 'prod'
+          - 'train'
+          - 'sales'
+      sprint:
+        description: 'Sprint number (e.g., 95, 96)'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set Version
+        id: set_version
+        run: |
+         $latest_tag = git describe --tags --abbrev=0
+         $version_parts = $latest_tag -split '\.'
+         $major = $version_parts[0]
+         $minor = $version_parts[1]
+         $sprint_number = $version_parts[2]
+
+         if ($sprint_number -ne ${{ github.event.inputs.sprint }}) {
+         $sprint_number = ${{ github.event.inputs.sprint }}
+         $minor = 0
+         }
+
+         $new_version = "$major.$minor.$($sprint_number + 1)"
+         echo "::set-output name=new_version::$new_version"
+
+      - name: Build Artifact
+        run: |
+             version=${{ steps.set_version.outputs.new_version }}
+             echo "Building artifact version $version"
+             # Add commands to build the artifact with the new version
+
+        -name: Setup .Net core
+          uses:actions/setup-dotnet@v1
+
+       -name: Build with .Net
+        run: dotnet build
+  
+  
+  
+          -name: Dotnet Publish
+           # You may pin to the exact commit or the version.
+           # uses: EasyDesk/action-dotnet-publish@75033960a28daa2ea89e0c1d8a04754568996506
+           uses: EasyDesk/action-dotnet-publish@v1.0.0
+           with:
+            # Path to the project to publish.
+            path: # optional, default is .
+           # Directory where all packages will be put (default value is 'packages').
+           output-dir: # optional, default is packages
+           # Build configuration for the build (default value is 'Release').
+           build-configuration: # optional, default is Release
+          # Whether to skip the build using the --no-build flag (default value is 'true').
+          skip-build: # optional, default is true    
+      
+
+
+
+
+
+
+      - name: Deploy
+        run: |
+          version=${{ steps.set_version.outputs.new_version }}
+          echo "Deploying artifact version $version"
+          if [[ ${{ github.event.inputs.environment }} == 'uat' ]]; then
+            # Deployment steps for UAT
+            # Replace with actual UAT deployment commands
+          elif [[ ${{ github.event.inputs.environment }} == 'prod' ]]; then
+            # Deployment steps for PROD
+            # Replace with actual PROD deployment commands
+          elif [[ ${{ github.event.inputs.environment }} == 'train' ]]; then
+            # Deployment steps for TRAIN
+            # Replace with actual TRAIN deployment commands
+          elif [[ ${{ github.event.inputs.environment }} == 'sales' ]]; then
+            # Deployment steps for SALES
+            # Replace with actual SALES deployment commands
+          else
+            echo "Unsupported environment for deployment."
+            exit 1
+          fi
+
 
