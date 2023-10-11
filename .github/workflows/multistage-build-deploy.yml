@@ -84,5 +84,6 @@
           $artifactName = $env:Parameters_ArtifactName
           $pathToPublish = $env:BUILD_ARTIFACTSTAGINGDIRECTORY
           echo "##vso[task.uploadfile]$(Build.ArtifactStagingDirectory)\$artifactName"
+          ##
 
 
