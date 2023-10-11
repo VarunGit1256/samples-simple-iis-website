@@ -19,14 +19,17 @@ jobs:
       - name: Set up Environment Variables
         run: |
           echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
-          echo "BUILD_NUMBER=${{ 8.0.95$(rev:.r) }}" >> $GITHUB_ENV
+
+      - name: Get Last Build Number
+        id: version
+        run: echo "::set-output name=build_number::$(($(git tag -l "${{ env.VERSION }}.*" | cut -d '.' -f 3 | sort -n | tail -n 1) + 1))"
 
       - name: Get Version and Build Number
         run: |
           echo "Version: ${{ env.VERSION }}"
-          echo "Build Number: ${{ env.BUILD_NUMBER }}"
+          echo "Build Number: ${{ steps.version.outputs.build_number }}"
 
       - name: Set Tag
         run: |
-          echo "::set-output name=tag::${{ env.VERSION }}.${{ env.BUILD_NUMBER }}"
-          echo "Setting tag as ${{ env.VERSION }}.${{ env.BUILD_NUMBER }}"
+          echo "::set-output name=tag::${{ env.VERSION }}.${{ steps.version.outputs.build_number }}"
+          echo "Setting tag as ${{ env.VERSION }}.${{ steps.version.outputs.build_number }}"
