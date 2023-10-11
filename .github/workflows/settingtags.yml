@@ -1,0 +1,30 @@
+name: Versioned Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Initial version'
+        required: true
+        default: '8.0.95'  # Set your initial version here
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Get Latest Tag
+        id: version
+        run: echo "::set-output name=version::$(git describe --tags --abbrev=0 || echo ${{ github.event.inputs.version }})"
+
+      - name: Increment Version
+        run: echo "::set-output name=version::$(node -p \"const v = '$(echo ${{ steps.version.outputs.version }})' + '.${{ github.run_number }}'; v\")"
+
+      - name: Set Tag
+        run: git tag ${{ steps.version.outputs.version }}
+
+      - name: Push Tag
+        run: git push origin ${{ steps.version.outputs.version }}
