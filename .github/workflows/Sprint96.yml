@@ -28,6 +28,7 @@ jobs:
 
       - name: Push Tag
         run: |
-          git tag -a ${{ steps.version.outputs.tag }} -m "Release ${{ steps.version.outputs.tag }}"
-          git push origin ${{ steps.version.outputs.tag }}
+         tag_name="${{ steps.version.outputs.tag }}"
+         git tag -a $tag_name -m "Release $tag_name"
+         git push origin $tag_name
 
