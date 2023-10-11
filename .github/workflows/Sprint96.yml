@@ -1,0 +1,26 @@
+name: Versioned Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Initial version'
+        required: true
+        default: '8.0.96'  # Set your initial version here
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Environment Variables
+        run: |
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Set Tag
+        run: |
+          echo "::set-output name=tag::${{ env.VERSION }}.${{ steps.version.outputs.build_number }}"
+          echo "Setting tag as ${{ env.VERSION }}.${{ steps.version.outputs.build_number }}"
