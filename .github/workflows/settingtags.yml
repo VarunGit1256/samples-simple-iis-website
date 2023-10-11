@@ -20,11 +20,16 @@ jobs:
         id: version
         run: echo "::set-output name=version::$(git describe --tags --abbrev=0 || echo ${{ github.event.inputs.version }})"
 
-      - name: Increment Version
-        run: echo "::set-output name=version::$(node -p \"const v = '$(echo ${{ steps.version.outputs.version }})' + '.${{ github.run_number }}'; v\")"
+      - name: Get Previous Build Number
+        id: previous_build
+        run: echo "::set-output name=build_number::${{ github.run_id }}"
+
+      - name: Increment Build Number
+        id: build
+        run: echo "::set-output name=build_number::${{ steps.previous_build.outputs.build_number + 1 }}"
 
       - name: Set Tag
-        run: git tag ${{ steps.version.outputs.version }}
+        run: git tag ${{ steps.version.outputs.version }}.${{ steps.build.outputs.build_number }}
 
       - name: Push Tag
-        run: git push origin ${{ steps.version.outputs.version }}
+        run: git push origin ${{ steps.version.outputs.version }}.${{ steps.build.outputs.build_number }}
