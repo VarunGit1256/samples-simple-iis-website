@@ -19,11 +19,7 @@ jobs:
   deploy:
     runs-on: windows-latest
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Set Version
+       -name: Set Version
         id: set_version
         run: |
          $latest_tag = git describe --tags --abbrev=0
