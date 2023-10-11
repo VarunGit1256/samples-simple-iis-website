@@ -21,6 +21,13 @@ jobs:
           echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
       - name: Set Tag
+        id: version
         run: |
           echo "::set-output name=tag::${{ env.VERSION }}.${{ steps.version.outputs.build_number }}"
           echo "Setting tag as ${{ env.VERSION }}.${{ steps.version.outputs.build_number }}"
+
+      - name: Push Tag
+        run: |
+          git tag -a ${{ steps.version.outputs.tag }} -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin ${{ steps.version.outputs.tag }}
+
