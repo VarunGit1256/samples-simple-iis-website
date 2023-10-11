@@ -1,19 +1,12 @@
-   name: Multi-Environment Deployment
+name: Build and Deploy IIS Application
 
-   on:
-    workflow_dispatch:
-     inputs:
-      environment:
-        description: 'Environment to deploy'
-        required: true
-        options:
-          - 'uat'
-          - 'prod'
-          - 'train'
-          - 'sales'
-      
-      jobs:
-     build:
+on:
+  push:
+    branches:
+      - main  # Or the branch you want to trigger the workflow on
+
+jobs:
+  build:
     runs-on: windows-latest  # Use a Windows runner to build and deploy IIS applications
 
     steps:
@@ -84,6 +77,4 @@
           $artifactName = $env:Parameters_ArtifactName
           $pathToPublish = $env:BUILD_ARTIFACTSTAGINGDIRECTORY
           echo "##vso[task.uploadfile]$(Build.ArtifactStagingDirectory)\$artifactName"
-          ##
-
 
