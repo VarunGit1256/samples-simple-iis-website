@@ -1,8 +1,8 @@
-name: Multi-Environment Deployment
+   name: Multi-Environment Deployment
 
-on:
-  workflow_dispatch:
-    inputs:
+   on:
+    workflow_dispatch:
+     inputs:
       environment:
         description: 'Environment to deploy'
         required: true
@@ -15,13 +15,14 @@ on:
         description: 'Sprint number (e.g., 95, 96)'
         required: true
 
-jobs:
-  deploy:
+      jobs:
+    deploy:
     runs-on: windows-latest
 
-       -name: Set Version
-        id: set_version
-        run: |
+    
+    name: Set Version
+    id: set_version
+    run: |
          $latest_tag = git describe --tags --abbrev=0
          $version_parts = $latest_tag -split '\.'
          $major = $version_parts[0]
@@ -35,18 +36,19 @@ jobs:
 
          $new_version = "$major.$minor.$($sprint_number + 1)"
          echo "::set-output name=new_version::$new_version"
-
-      - name: Build Artifact
-        run: |
+         
+         
+         - name: Build Artifact
+           run: |
              version=${{ steps.set_version.outputs.new_version }}
              echo "Building artifact version $version"
              # Add commands to build the artifact with the new version
 
-        -name: Setup .Net core
+         -name: Setup .Net core
           uses:actions/setup-dotnet@v1
 
-       -name: Build with .Net
-        run: dotnet build
+         -name: Build with .Net
+         run: dotnet build
   
   
   
@@ -70,8 +72,8 @@ jobs:
 
 
 
-      - name: Deploy
-        run: |
+         - name: Deploy
+          run: |
           version=${{ steps.set_version.outputs.new_version }}
           echo "Deploying artifact version $version"
           if [[ ${{ github.event.inputs.environment }} == 'uat' ]]; then
