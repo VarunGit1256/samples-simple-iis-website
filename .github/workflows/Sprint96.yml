@@ -26,6 +26,12 @@ jobs:
           echo "::set-output name=tag::${{ env.VERSION }}"
           echo "Setting tag as ${{ env.VERSION }}"
 
+          - name: Set up Git
+            run: |
+            git config --global user.email "varunteja4393@gmail.com.com"
+            git config --global user.name "varunGit1256"
+
+
       - name: Push Tag
         run: |
          tag_name="${{ steps.version.outputs.tag }}"
