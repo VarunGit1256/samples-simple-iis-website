@@ -16,19 +16,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Get Latest Tag
-        id: version
-        run: echo "::set-output name=version::$(git describe --tags --abbrev=0 || echo ${{ github.event.inputs.version }})"
+      - name: Set up Environment Variables
+        run: |
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=${{ github.run_id }}" >> $GITHUB_ENV
 
-      - name: Get Previous Build Number
-        id: previous_build
-        run: echo "::set-output name=build_number::${{ github.run_id }}"
-
-      - name: Increment Build Number
-        id: build
-        run: echo "::set-output name=build_number::$(($(echo ${{ steps.previous_build.outputs.build_number }}) + 1))"
+      - name: Get Version and Build Number
+        run: |
+          echo "Version: ${{ env.VERSION }}"
+          echo "Build Number: ${{ env.BUILD_NUMBER }}"
 
       - name: Set Tag
         run: |
-          echo "::set-output name=tag::${{ steps.version.outputs.version }}.${{ steps.build.outputs.build_number }}"
-          echo "Setting tag as ${{ steps.version.outputs.version }}.${{ steps.build.outputs.build_number }}"
+          echo "::set-output name=tag::${{ env.VERSION }}.${{ env.BUILD_NUMBER }}"
+          echo "Setting tag as ${{ env.VERSION }}.${{ env.BUILD_NUMBER }}"
