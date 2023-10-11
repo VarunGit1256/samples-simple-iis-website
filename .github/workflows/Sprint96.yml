@@ -1,4 +1,4 @@
-name: Versioned Build
+name: BuildSprint96
 
 on:
   workflow_dispatch:
