@@ -1,10 +1,8 @@
 name: Build and Deploy IIS Application
 
 on:
-  push:
-    branches:
-      - main  # Or the branch you want to trigger the workflow on
-
+  workflow_dispatch
+    
 jobs:
   build:
     runs-on: windows-latest  # Use a Windows runner to build and deploy IIS applications
