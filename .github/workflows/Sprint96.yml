@@ -23,8 +23,8 @@ jobs:
       - name: Set Tag
         id: version
         run: |
-          echo "::set-output name=tag::${{ env.VERSION }}.${{ steps.version.outputs.build_number }}"
-          echo "Setting tag as ${{ env.VERSION }}.${{ steps.version.outputs.build_number }}"
+          echo "::set-output name=tag::${{ env.VERSION }}"
+          echo "Setting tag as ${{ env.VERSION }}"
 
       - name: Push Tag
         run: |
