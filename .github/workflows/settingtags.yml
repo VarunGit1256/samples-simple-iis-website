@@ -19,7 +19,7 @@ jobs:
       - name: Set up Environment Variables
         run: |
           echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
-          echo "BUILD_NUMBER=${{ github.run_number }}" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=${{ 8.0.95$(rev:.r) }}" >> $GITHUB_ENV
 
       - name: Get Version and Build Number
         run: |
