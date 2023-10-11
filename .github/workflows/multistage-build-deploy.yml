@@ -11,86 +11,78 @@
           - 'prod'
           - 'train'
           - 'sales'
-      sprint:
-        description: 'Sprint number (e.g., 95, 96)'
-        required: true
-
-      jobs:
-    deploy:
-    runs-on: windows-latest
-
-    
-    name: Set Version
-    id: set_version
-    run: |
-         $latest_tag = git describe --tags --abbrev=0
-         $version_parts = $latest_tag -split '\.'
-         $major = $version_parts[0]
-         $minor = $version_parts[1]
-         $sprint_number = $version_parts[2]
-
-         if ($sprint_number -ne ${{ github.event.inputs.sprint }}) {
-         $sprint_number = ${{ github.event.inputs.sprint }}
-         $minor = 0
-         }
-
-         $new_version = "$major.$minor.$($sprint_number + 1)"
-         echo "::set-output name=new_version::$new_version"
-         
-         
-         - name: Build Artifact
-           run: |
-             version=${{ steps.set_version.outputs.new_version }}
-             echo "Building artifact version $version"
-             # Add commands to build the artifact with the new version
-
-         -name: Setup .Net core
-          uses:actions/setup-dotnet@v1
-
-         -name: Build with .Net
-         run: dotnet build
-  
-  
-  
-          -name: Dotnet Publish
-           # You may pin to the exact commit or the version.
-           # uses: EasyDesk/action-dotnet-publish@75033960a28daa2ea89e0c1d8a04754568996506
-           uses: EasyDesk/action-dotnet-publish@v1.0.0
-           with:
-            # Path to the project to publish.
-            path: # optional, default is .
-           # Directory where all packages will be put (default value is 'packages').
-           output-dir: # optional, default is packages
-           # Build configuration for the build (default value is 'Release').
-           build-configuration: # optional, default is Release
-          # Whether to skip the build using the --no-build flag (default value is 'true').
-          skip-build: # optional, default is true    
       
+      jobs:
+     build:
+    runs-on: windows-latest  # Use a Windows runner to build and deploy IIS applications
 
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.4.2
 
+      - name: Install BatchBuilder.Web dependencies
+        run: npm install
+        working-directory: CaseWorthy.BatchBuilder.Web/ClientApp
 
+      - name: Install CommHub.Web dependencies
+        run: npm install
+        working-directory: CaseWorthy.CommHub.Web/ClientApp
 
+      - name: Install CommLink.Web dependencies
+        run: npm install
+        working-directory: CaseWorthy.CommLink.Web/ClientApp
 
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli@10.0.5
 
-         - name: Deploy
-          run: |
-          version=${{ steps.set_version.outputs.new_version }}
-          echo "Deploying artifact version $version"
-          if [[ ${{ github.event.inputs.environment }} == 'uat' ]]; then
-            # Deployment steps for UAT
-            # Replace with actual UAT deployment commands
-          elif [[ ${{ github.event.inputs.environment }} == 'prod' ]]; then
-            # Deployment steps for PROD
-            # Replace with actual PROD deployment commands
-          elif [[ ${{ github.event.inputs.environment }} == 'train' ]]; then
-            # Deployment steps for TRAIN
-            # Replace with actual TRAIN deployment commands
-          elif [[ ${{ github.event.inputs.environment }} == 'sales' ]]; then
-            # Deployment steps for SALES
-            # Replace with actual SALES deployment commands
-          else
-            echo "Unsupported environment for deployment."
-            exit 1
-          fi
+      - name: Use NuGet 5.x
+        run: nuget install
+
+      - name: NuGet restore
+        run: nuget restore $(Parameters.solution)
+
+      - name: Change AssemblyFileVersion
+        run: |
+          echo ##vso[task.setvariable variable=BUILD_NUMBER;]$(Build.BuildNumber)
+          powershell -File .\SharedAssemblyInfo.ps1
+
+      - name: Change AssemblyVersion
+        run: powershell -File .\SharedAssemblyInfo.ps1
+
+      - name: Build solution
+        run: msbuild $(Parameters.solution) /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\\" /p:PrecompileBeforePublish=true /p:WDPMergeOption="CreateSeparateAssembly" /p:UseMerge=false /p:UseFixedNames=true /p:Platform=$(BuildPlatform) /p:Configuration=$(BuildConfiguration) /p:Clean=true /p:MSBuildArchitecture=x64
+
+      - name: Copy ClientBin
+        run: |
+          robocopy $(Build.SourcesDirectory)\DLLS\ClientBin $(Build.StagingDirectory)\CaseWorthy\ClientBin
+
+      - name: Copy Changes In Build
+        run: |
+          robocopy $(Build.SourcesDirectory)\ChangesinBuild $(Build.SourcesDirectory)\Build\ChangesinBuild
+
+      - name: Zip BatchBuilder
+        run: Compress-Archive -Path $(Build.SourcesDirectory)\CaseWorthy.BatchBuilder.Web\obj\Release\net6.0\PubTmp\Out\ClientApp\dist -DestinationPath $(Build.ArtifactStagingDirectory)\BatchBuilder.zip
+
+      - name: Zip CommHub
+        run: Compress-Archive -Path $(Build.SourcesDirectory)\CaseWorthy.CommHub.Web\obj\Release\net6.0\PubTmp\Out\ClientApp\dist -DestinationPath $(Build.ArtifactStagingDirectory)\CommHub.zip
+
+      - name: Zip CommLink
+        run: Compress-Archive -Path $(Build.SourcesDirectory)\CaseWorthy.CommLink.Web\obj\Release\net6.0\PubTmp\Out\ClientApp\dist -DestinationPath $(Build.ArtifactStagingDirectory)\CommLink.zip
+
+      - name: Zip Build Scripts
+        run: Compress-Archive -Path $(Build.SourcesDirectory)\ChangesinBuild -DestinationPath $(Build.ArtifactStagingDirectory)\BuildScripts.zip
+
+      - name: Publish symbols path
+        run: |
+          $searchPattern = Get-ChildItem -Path $(Build.SourcesDirectory) -Recurse -Filter *.pdb
+          Copy-Item -Path $searchPattern -Destination $(Build.ArtifactStagingDirectory) -Recurse
+
+      - name: Publish Artifact
+        run: |
+          $artifactName = $env:Parameters_ArtifactName
+          $pathToPublish = $env:BUILD_ARTIFACTSTAGINGDIRECTORY
+          echo "##vso[task.uploadfile]$(Build.ArtifactStagingDirectory)\$artifactName"
 
 
