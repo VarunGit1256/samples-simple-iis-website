@@ -26,8 +26,8 @@ jobs:
           echo "::set-output name=tag::${{ env.VERSION }}"
           echo "Setting tag as ${{ env.VERSION }}"
 
-          - name: Set up Git
-            run: |
+      - name: Set up Git
+        run: |
             git config --global user.email "varunteja4393@gmail.com.com"
             git config --global user.name "varunGit1256"
 
