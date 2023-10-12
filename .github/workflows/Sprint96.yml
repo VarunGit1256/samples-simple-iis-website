@@ -40,8 +40,6 @@ jobs:
 
       - name: Setup .Net
         uses: actions/setup-dotnet@v2
-        with:
-            dotnet-version: 4.0.x
 
       - name: Restore .Net
         run: dotnet restore
